@@ -2,15 +2,17 @@
   import { page } from '$app/stores';
   import { onMount } from 'svelte';
   import { PixiApp } from '../pixi/app';
-  import { Spine, TextureAtlas } from 'pixi-spine';
+  import { Spine, TextureAtlas, SpineDebugRenderer } from 'pixi-spine';
   import { SkeletonJson, AtlasAttachmentLoader } from '@pixi-spine/runtime-3.7';
   import { Assets } from 'pixi.js';
+  import FileInput from './FileInput.svelte';
 
   let canvasWrap: HTMLDivElement;
   let jsonInput: HTMLInputElement;
   let atlasInput: HTMLInputElement;
   let pngInput: HTMLInputElement;
   let pixiApp: PixiApp;
+  let spineAnimation: Spine;
 
   const convertBase64 = (file: Blob): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -45,8 +47,10 @@
   const formSubmit = async (e: Event) => {
     e.preventDefault();
 
-    // TODO: Throw error and display message to user.
-    if (jsonInput.files === null || atlasInput.files === null || pngInput.files === null) return;
+    // TODO: Throw error and display message to user if files don't exist
+    if (!jsonInput.files || !atlasInput.files || !pngInput.files) return;
+
+    // TODO: clear and hide form after upload
 
     const [jsonFile, pngFile, atlasFile] = await Promise.all([
       JSON.parse(await convertToText(jsonInput.files[0])),
@@ -80,34 +84,45 @@
 
     let spineData = parser.readSkeletonData(jsonFile);
 
-    const spine = new Spine(spineData);
+    spineAnimation = new Spine(spineData);
 
-    spine.x = pixiApp.renderer.width * 0.5;
-    spine.y = pixiApp.renderer.height * 0.5;
-    spine.pivot.x = spine.width * 0.5;
-    spine.pivot.y = spine.height * -0.5;
+    spineAnimation.x = pixiApp.renderer.width * 0.5;
+    spineAnimation.y = pixiApp.renderer.height * 0.5;
+    spineAnimation.pivot.x = spineAnimation.width * 0.5;
+    spineAnimation.pivot.y = spineAnimation.height * -0.5;
 
-    pixiApp.stage.addChild(spine);
+    // spineAnimation.debug = new SpineDebugRenderer();
+
+    pixiApp.stage.addChild(spineAnimation);
   };
 
   onMount(() => {
     if (pixiApp) return;
-
     pixiApp = new PixiApp({ el: canvasWrap });
   });
 </script>
 
-<form id="upload" method="POST" on:submit={formSubmit}>
-  <label for="file">JSON file</label>
-  <input bind:this={jsonInput} type="file" id="file" accept=".json" />
+<h2>Upload exported Spine files for Pixijs</h2>
+<form class="upload-form" id="upload" method="POST" on:submit={formSubmit}>
+  <div class="upload-form__inner">
+    <FileInput
+      id={'json-file'}
+      label=".json file"
+      fileType={'.json'}
+      bind:inputElement={jsonInput}
+    />
 
-  <label for="file">Atlas file</label>
-  <input bind:this={atlasInput} type="file" id="file" accept=".atlas" />
+    <FileInput
+      id={'atlas-file'}
+      label=".atlas file"
+      fileType={'.atlas'}
+      bind:inputElement={atlasInput}
+    />
 
-  <label for="file">PNG file</label>
-  <input bind:this={pngInput} type="file" id="file" accept="image/png" />
+    <FileInput id={'png-file'} label=".png file" fileType={'.png'} bind:inputElement={pngInput} />
+  </div>
 
-  <button type="submit">Upload</button>
+  <button class="upload-button" type="submit">Upload</button>
 </form>
 
 <div class="canvas-wrap" bind:this={canvasWrap} />
@@ -117,5 +132,42 @@
     position: absolute;
     height: 100%;
     width: 100%;
+  }
+
+  .upload-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 30px;
+    width: 1200px;
+    max-width: 100%;
+    margin: 0 auto;
+
+    &__inner {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+  }
+
+  .upload-button {
+    display: block;
+    position: relative;
+    border: none;
+    font-size: 2rem;
+    min-width: 200px;
+    padding: 10px 20px;
+    border-radius: 100px;
+    background: linear-gradient(135deg, #6ebeff, #6562be);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.3s ease-out;
   }
 </style>
