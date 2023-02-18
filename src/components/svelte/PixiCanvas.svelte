@@ -3,7 +3,6 @@
   import { onMount } from 'svelte';
   import { PixiApp } from '../pixi/app';
   import { Spine, TextureAtlas, SpineDebugRenderer } from 'pixi-spine';
-  import { SkeletonJson, AtlasAttachmentLoader } from '@pixi-spine/runtime-3.7';
   import { Assets } from 'pixi.js';
   import FileInput from './FileInput.svelte';
 
@@ -47,10 +46,14 @@
   const formSubmit = async (e: Event) => {
     e.preventDefault();
 
+    // TODO: Sort out how to deal with different versions of Spine exports
+
     // TODO: Throw error and display message to user if files don't exist
     if (!jsonInput.files || !atlasInput.files || !pngInput.files) return;
 
     // TODO: clear and hide form after upload
+
+    // TODO: Add upload progress indicator
 
     const [jsonFile, pngFile, atlasFile] = await Promise.all([
       JSON.parse(await convertToText(jsonInput.files[0])),
@@ -66,7 +69,7 @@
   };
 
   type CreateSpineProps = {
-    jsonFile: Record<any, any>;
+    jsonFile: Record<string, any>;
     pngFile: string;
     atlasFile: string;
   };
@@ -77,6 +80,31 @@
     let textureAtlas = await new Promise<TextureAtlas>(
       (resolve) => new TextureAtlas(atlasFile, (line, callback) => callback(texture), resolve)
     );
+
+    const runtimeVersion = jsonFile.skeleton.spine.substring(0, 3);
+    // TODO: Show the spine version detected
+    console.log('pixi spine version -->', runtimeVersion);
+
+    // TODO: Allow user to manually set runtime version
+    let spineRuntime;
+    switch (runtimeVersion) {
+      case '3.7':
+        spineRuntime = await import('@pixi-spine/runtime-3.7');
+        break;
+      case '3.8':
+        spineRuntime = await import('@pixi-spine/runtime-3.8');
+        break;
+      case '4.0':
+        spineRuntime = await import('@pixi-spine/runtime-4.0');
+        break;
+      case '4.1':
+        spineRuntime = await import('@pixi-spine/runtime-4.1');
+        break;
+      default:
+        spineRuntime = await import('@pixi-spine/runtime-4.1');
+    }
+
+    const { AtlasAttachmentLoader, SkeletonJson } = spineRuntime as any;
 
     let spineAtlasLoader = new AtlasAttachmentLoader(textureAtlas);
 
@@ -91,6 +119,7 @@
     spineAnimation.pivot.x = spineAnimation.width * 0.5;
     spineAnimation.pivot.y = spineAnimation.height * -0.5;
 
+    // TODO: Display an option to turn the debugger on and off
     // spineAnimation.debug = new SpineDebugRenderer();
 
     pixiApp.stage.addChild(spineAnimation);
@@ -102,7 +131,6 @@
   });
 </script>
 
-<h2>Upload exported Spine files for Pixijs</h2>
 <form class="upload-form" id="upload" method="POST" on:submit={formSubmit}>
   <div class="upload-form__inner">
     <FileInput
