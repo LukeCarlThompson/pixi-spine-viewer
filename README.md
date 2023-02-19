@@ -9,3 +9,4 @@ Just upload the json, atlas and png files and you can choose the various animati
 - Improve error reporting to the front-end
 - Allow pan and zoom on canvas
 - Display grid with size and position information
+- Toggle display of spine debug render
