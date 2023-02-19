@@ -53,6 +53,7 @@
     padding: 20px 30px;
     background-color: rgb(240, 240, 255);
     border-radius: 8px;
+    max-width: 100%;
     &:after {
       content: '';
       position: absolute;
