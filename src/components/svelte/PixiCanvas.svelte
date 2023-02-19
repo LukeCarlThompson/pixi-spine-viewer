@@ -9,7 +9,7 @@
   import FileInput from './FileInput.svelte';
   import NumberInput from './NumberInput.svelte';
   import Select from './Select.svelte';
-  import { damp } from 'maath/easing';
+  import { damp } from 'maath/easing/dist/maath-easing.cjs.js';
 
   let canvasWrap: HTMLDivElement;
   let jsonInput: HTMLInputElement;
