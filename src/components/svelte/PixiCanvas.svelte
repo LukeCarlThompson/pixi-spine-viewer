@@ -1,10 +1,12 @@
 <script lang="ts">
   import { page } from '$app/stores';
+  import { slide } from 'svelte/transition';
   import { onMount } from 'svelte';
   import { PixiApp } from '../pixi/app';
   import { Spine, TextureAtlas, SpineDebugRenderer } from 'pixi-spine';
   import { Assets } from 'pixi.js';
   import FileInput from './FileInput.svelte';
+  import Select from './Select.svelte';
 
   let canvasWrap: HTMLDivElement;
   let jsonInput: HTMLInputElement;
@@ -12,6 +14,9 @@
   let pngInput: HTMLInputElement;
   let pixiApp: PixiApp;
   let spineAnimation: Spine;
+
+  let animationNames: string[] = ['test'];
+  let skinNames: string[] = ['test'];
 
   const convertBase64 = (file: Blob): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -46,10 +51,8 @@
   const formSubmit = async (e: Event) => {
     e.preventDefault();
 
-    // TODO: Sort out how to deal with different versions of Spine exports
-
     // TODO: Throw error and display message to user if files don't exist
-    if (!jsonInput.files || !atlasInput.files || !pngInput.files) return;
+    if (!jsonInput.files?.length || !atlasInput.files?.length || !pngInput.files?.length) return;
 
     // TODO: clear and hide form after upload
 
@@ -60,6 +63,9 @@
       convertBase64(pngInput.files[0]),
       convertToText(atlasInput.files[0]),
     ]);
+
+    animationNames = Object.keys(jsonFile.animations);
+    skinNames = Object.keys(jsonFile.skins);
 
     createSpine({
       jsonFile,
@@ -133,33 +139,57 @@
 
 <form class="upload-form" id="upload" method="POST" on:submit={formSubmit}>
   <div class="upload-form__inner">
-    <FileInput
-      id={'json-file'}
-      label=".json file"
-      fileType={'.json'}
-      bind:inputElement={jsonInput}
-    />
+    <FileInput id={'json-file'} label=".json" fileType={'.json'} bind:inputElement={jsonInput} />
 
     <FileInput
       id={'atlas-file'}
-      label=".atlas file"
+      label=".atlas"
       fileType={'.atlas'}
       bind:inputElement={atlasInput}
     />
 
-    <FileInput id={'png-file'} label=".png file" fileType={'.png'} bind:inputElement={pngInput} />
+    <FileInput id={'png-file'} label=".png" fileType={'.png'} bind:inputElement={pngInput} />
   </div>
 
   <button class="upload-button" type="submit">Upload</button>
 </form>
 
-<div class="canvas-wrap" bind:this={canvasWrap} />
+<div class="canvas-wrap" bind:this={canvasWrap}>
+  {#if spineAnimation}
+    <div class="controls" transition:slide>
+      {#if animationNames.length}
+        <Select
+          label="Animation"
+          id="anim"
+          options={animationNames}
+          onChange={(e) => {
+            if (!e.target || !e.target.value) return;
+            spineAnimation.state.setAnimation(0, e.target.value, true);
+          }}
+        />
+      {/if}
+      {#if skinNames.length}
+        <Select
+          label="Skin"
+          id="skin"
+          options={skinNames}
+          onChange={(e) => {
+            if (!e.target || !e.target.value) return;
+            spineAnimation.skeleton.setSkinByName(e.target.value);
+          }}
+        />
+      {/if}
+    </div>
+  {/if}
+</div>
 
 <style lang="scss">
   .canvas-wrap {
-    position: absolute;
-    height: 100%;
+    position: relative;
+    height: 900px;
     width: 100%;
+    border: 2px solid rgb(170, 196, 224);
+    border-radius: 8px;
   }
 
   .upload-form {
@@ -187,15 +217,33 @@
     font-size: 2rem;
     min-width: 200px;
     padding: 10px 20px;
+    margin-top: 30px;
     border-radius: 100px;
     background: linear-gradient(135deg, #6ebeff, #6562be);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 3px 3px rgba(0, 0, 0, 0.4);
     display: flex;
     align-items: center;
     justify-content: center;
     color: #fff;
     font-weight: bold;
     cursor: pointer;
-    transition: transform 0.3s ease-out;
+    transition: transform 0.4s cubic-bezier(0.5, 0, 0, 1),
+      box-shadow 0.4s cubic-bezier(0.5, 0, 0, 1);
+    &:hover {
+      transform: scale(1.1);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
+  }
+
+  .controls {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    top: 10px;
+    left: 10px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 8px;
+    padding: 10px;
   }
 </style>
