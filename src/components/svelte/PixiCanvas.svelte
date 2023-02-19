@@ -3,7 +3,7 @@
   import { reveal } from '$lib/cascade-reveal';
   import { slide } from 'svelte/transition';
   import { onMount } from 'svelte';
-  import { PixiApp } from '../pixi/app';
+  import type { PixiApp } from '../pixi/app';
   import { Spine, TextureAtlas, SpineDebugRenderer } from 'pixi-spine';
   import { Assets } from 'pixi.js';
   import FileInput from './FileInput.svelte';
@@ -151,8 +151,9 @@
     });
   };
 
-  onMount(() => {
+  onMount(async () => {
     if (pixiApp) return;
+    const { PixiApp } = await import('../pixi/app');
     pixiApp = new PixiApp({ el: canvasWrap });
   });
 </script>
