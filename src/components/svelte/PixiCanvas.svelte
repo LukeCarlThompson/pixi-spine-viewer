@@ -225,7 +225,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 20px;
+    gap: var(--spacing-m);
     width: 1200px;
     max-width: 100%;
     margin: 0 auto 60px;
@@ -234,7 +234,7 @@
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 20px;
+      gap: var(--spacing-m);
     }
   }
 
