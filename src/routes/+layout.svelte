@@ -21,6 +21,6 @@
   main {
     position: relative;
     flex: 1;
-    margin: 20px;
+    margin: var(--spacing-gutter);
   }
 </style>
