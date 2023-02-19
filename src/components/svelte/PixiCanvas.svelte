@@ -188,7 +188,7 @@
     position: relative;
     height: 900px;
     width: 100%;
-    border: 2px solid rgb(170, 196, 224);
+    background: rgba(100, 100, 100, 0.1);
     border-radius: 8px;
   }
 
@@ -197,10 +197,9 @@
     flex-direction: column;
     align-items: center;
     gap: 20px;
-    padding: 30px;
     width: 1200px;
     max-width: 100%;
-    margin: 0 auto;
+    margin: 0 auto 60px;
 
     &__inner {
       display: flex;

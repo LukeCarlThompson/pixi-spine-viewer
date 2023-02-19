@@ -1,7 +1,8 @@
 <script lang="ts">
   import { slide } from 'svelte/transition';
+  import downArrow from '$lib/images/down-arrow.svg?raw';
   export let inputElement;
-  export let fileType = '.json';
+  export let fileType: string;
   export let id: string;
   export let label: string;
 
@@ -28,7 +29,14 @@
       {id}
       accept={fileType}
     />
-    <label class="file-input__label" for="file">{label}</label>
+    <label class="file-input__label" for="file">
+      <div class="file-input__label__svg-wrap">
+        {@html downArrow}
+      </div>
+      <span class="file-input__label__text">
+        {label}
+      </span>
+    </label>
   </div>
   {#if fileDetails}
     <p class="file-input__file-details" transition:slide>{fileDetails}</p>
@@ -64,22 +72,33 @@
     }
 
     &__label {
-      font-size: 2rem;
-      display: block;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
       position: relative;
       padding: 0;
       margin: 0;
-      background: linear-gradient(135deg, #6ebeff, #6562be);
-      text-shadow: 2px 3px 5px rgba(0, 0, 0, 0.2);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
       cursor: pointer;
       pointer-events: none;
-      transition: transform 0.4s cubic-bezier(0.5, 0, 0, 1);
+
+      &__text {
+        font-size: 2rem;
+        background: linear-gradient(135deg, #6ebeff, #6562be);
+        text-shadow: 0 2px 3px rgba(0, 0, 0, 0.3);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        transition: transform 0.4s cubic-bezier(0.5, 0, 0, 1),
+          text-shadow 0.4s cubic-bezier(0.5, 0, 0, 1);
+      }
+
+      &__svg-wrap {
+        width: 30px;
+      }
     }
 
     &__input {
@@ -100,11 +119,14 @@
       &:hover,
       &:focus {
         + #{$component}__label {
-          transform: scale(1.1);
+          #{$component}__label__text {
+            transform: scale(1.1);
+            text-shadow: 0 6px 10px rgba(0, 0, 0, 0.1);
+          }
         }
       }
       &:focus-visible {
-        + #{$component}__label {
+        + #{$component}__label__text {
           transform: scale(1.02);
           outline: 4px solid black;
         }
