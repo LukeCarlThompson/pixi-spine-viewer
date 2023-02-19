@@ -15,7 +15,6 @@
     const [file] = target.files;
     const { name, size } = file;
     fileDetails = `${name} - ${(size / 1000).toFixed(2)}KB`;
-    console.log(`${name} - ${(size / 1000).toFixed(2)}KB`);
   };
 </script>
 
