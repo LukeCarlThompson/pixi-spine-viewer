@@ -31,7 +31,9 @@
     align-items: flex-start;
 
     &__label {
-      font-size: 1.2rem;
+      font-family: var(--font-headings);
+      font-weight: 700;
+      font-size: 1rem;
     }
 
     &__input-wrap {
@@ -54,15 +56,13 @@
       position: relative;
       display: flex;
       appearance: none;
-      min-width: 15ch;
+      min-width: 140px;
       border: 1px solid grey;
       border-radius: 4px;
-      padding: 8px 12px;
+      padding: 8px 20px 8px 12px;
       font-size: 1rem;
       cursor: pointer;
       line-height: 1.1;
-      background: linear-gradient(to top, #f9f9f9, #fff 33%);
-      padding-right: 20px;
     }
   }
 </style>

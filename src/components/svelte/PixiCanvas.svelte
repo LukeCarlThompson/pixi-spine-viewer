@@ -7,7 +7,9 @@
   import { Spine, TextureAtlas, SpineDebugRenderer } from 'pixi-spine';
   import { Assets } from 'pixi.js';
   import FileInput from './FileInput.svelte';
+  import NumberInput from './NumberInput.svelte';
   import Select from './Select.svelte';
+  import { damp } from 'maath/easing';
 
   let canvasWrap: HTMLDivElement;
   let jsonInput: HTMLInputElement;
@@ -15,6 +17,9 @@
   let pngInput: HTMLInputElement;
   let pixiApp: PixiApp;
   let spineAnimation: Spine;
+  let scale = '1';
+  let positionX = '1';
+  let positionY = '1';
 
   let animationNames: string[] = ['test'];
   let skinNames: string[] = ['test'];
@@ -125,18 +130,25 @@
     if (spineAnimation) {
       spineAnimation.destroy(true);
     }
-
     spineAnimation = new Spine(spineData);
 
-    spineAnimation.x = pixiApp.renderer.width * 0.5;
-    spineAnimation.y = pixiApp.renderer.height * 0.5;
-    spineAnimation.pivot.x = spineAnimation.width * 0.5;
-    spineAnimation.pivot.y = spineAnimation.height * -0.5;
+    positionX = `${pixiApp.renderer.width * 0.5}`;
+    positionY = `${pixiApp.renderer.height * 0.5}`;
+    // spineAnimation.pivot.x = spineAnimation.width * 0.5;
+    // spineAnimation.pivot.y = spineAnimation.height * -0.5;
+    console.log(spineAnimation.scale.x);
 
     // TODO: Display an option to turn the debugger on and off
     // spineAnimation.debug = new SpineDebugRenderer();
 
     pixiApp.stage.addChild(spineAnimation);
+
+    pixiApp.ticker.add((delta) => {
+      damp(spineAnimation.scale, 'x', Number.parseFloat(scale), 5, delta);
+      damp(spineAnimation.scale, 'y', Number.parseFloat(scale), 5, delta);
+      damp(spineAnimation.position, 'x', Number.parseFloat(positionX), 5, delta);
+      damp(spineAnimation.position, 'y', Number.parseFloat(positionY), 5, delta);
+    });
   };
 
   onMount(() => {
@@ -187,6 +199,9 @@
           }}
         />
       {/if}
+      <NumberInput label="Scale" id="scale" step={0.1} bind:value={scale} />
+      <NumberInput label="Position X" id="position-x" step={10} bind:value={positionX} />
+      <NumberInput label="Position Y" id="position-y" step={10} bind:value={positionY} />
     </div>
   {/if}
 </div>
@@ -194,14 +209,14 @@
 <style lang="scss">
   .canvas-wrap {
     position: relative;
-    min-height: 800px;
+    min-height: 200px;
     width: 100%;
     background: rgba(100, 100, 100, 0.1);
     border-radius: 8px;
     display: flex;
     &:after {
       content: '';
-      padding-top: 100%;
+      padding-top: 50%;
     }
   }
 

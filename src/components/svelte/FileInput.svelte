@@ -83,9 +83,11 @@
       pointer-events: none;
 
       &__text {
+        font-family: var(--font-headings);
+        font-weight: 700;
         font-size: 2rem;
         background: linear-gradient(135deg, #6ebeff, #6562be);
-        text-shadow: 0 2px 3px rgba(0, 0, 0, 0.3);
+        text-shadow: 0 2px 2px rgba(0, 0, 0, 0.3);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         display: flex;
