@@ -3,7 +3,7 @@
 </script>
 
 <svelte:head>
-  <title>Home</title>
+  <title>Pixi Spine viewer - home</title>
   <meta name="description" content="Pixi Spine viewer" />
 </svelte:head>
 

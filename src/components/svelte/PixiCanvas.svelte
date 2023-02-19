@@ -1,5 +1,6 @@
 <script lang="ts">
   import { page } from '$app/stores';
+  import { reveal } from '$lib/cascade-reveal';
   import { slide } from 'svelte/transition';
   import { onMount } from 'svelte';
   import { PixiApp } from '../pixi/app';
@@ -118,6 +119,10 @@
 
     let spineData = parser.readSkeletonData(jsonFile);
 
+    if (spineAnimation) {
+      spineAnimation.destroy(true);
+    }
+
     spineAnimation = new Spine(spineData);
 
     spineAnimation.x = pixiApp.renderer.width * 0.5;
@@ -151,10 +156,10 @@
     <FileInput id={'png-file'} label=".png" fileType={'.png'} bind:inputElement={pngInput} />
   </div>
 
-  <button class="upload-button" type="submit">Upload</button>
+  <button class="upload-button" type="submit" use:reveal data-reveal="fade-up">Upload</button>
 </form>
 
-<div class="canvas-wrap" bind:this={canvasWrap}>
+<div class="canvas-wrap" bind:this={canvasWrap} use:reveal data-reveal="fade">
   {#if spineAnimation}
     <div class="controls" transition:slide>
       {#if animationNames.length}

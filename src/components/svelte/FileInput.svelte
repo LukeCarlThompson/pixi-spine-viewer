@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { reveal } from '$lib/cascade-reveal';
   import { slide } from 'svelte/transition';
   import downArrow from '$lib/images/down-arrow.svg?raw';
   export let inputElement;
@@ -18,7 +19,7 @@
   };
 </script>
 
-<div class="file-input">
+<div class="file-input" use:reveal data-reveal="fade-up">
   <p class="file-input__instruction">Drop file here or click to browse</p>
   <div>
     <input
@@ -60,8 +61,8 @@
       left: 0;
       top: -2px;
       left: -2px;
-      width: calc(100% - 4px);
-      height: calc(100% - 4px);
+      width: calc(100% + 4px);
+      height: calc(100% + 4px);
       border: 4px dashed rgb(181, 181, 250);
       border-radius: 8px;
       pointer-events: none;
