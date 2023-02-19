@@ -49,6 +49,9 @@
     });
   };
 
+  // TODO: Add in controls to scale the spine anim and move around canvas
+  // TODO: Add in grid with labelled coordinates
+
   const formSubmit = async (e: Event) => {
     e.preventDefault();
 
@@ -191,10 +194,15 @@
 <style lang="scss">
   .canvas-wrap {
     position: relative;
-    height: 900px;
+    min-height: 800px;
     width: 100%;
     background: rgba(100, 100, 100, 0.1);
     border-radius: 8px;
+    display: flex;
+    &:after {
+      content: '';
+      padding-top: 100%;
+    }
   }
 
   .upload-form {
