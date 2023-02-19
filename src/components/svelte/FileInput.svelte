@@ -54,19 +54,7 @@
     background-color: rgb(240, 240, 255);
     border-radius: 8px;
     max-width: 100%;
-    &:after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      top: -2px;
-      left: -2px;
-      width: calc(100% + 4px);
-      height: calc(100% + 4px);
-      border: 4px dashed rgb(181, 181, 250);
-      border-radius: 8px;
-      pointer-events: none;
-    }
+    border: 4px dashed rgb(181, 181, 250);
 
     &__instruction {
       margin: 0;
