@@ -30,7 +30,7 @@
       {id}
       accept={fileType}
     />
-    <label class="file-input__label" for="file">
+    <label class="file-input__label" for={id}>
       <div class="file-input__label__svg-wrap">
         {@html downArrow}
       </div>
