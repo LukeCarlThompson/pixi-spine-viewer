@@ -127,9 +127,11 @@
         }
       }
       &:focus-visible {
-        + #{$component}__label__text {
-          transform: scale(1.02);
-          outline: 4px solid black;
+        + #{$component}__label {
+          #{$component}__label__text {
+            transform: scale(1.02);
+            outline: 4px solid black;
+          }
         }
       }
     }
