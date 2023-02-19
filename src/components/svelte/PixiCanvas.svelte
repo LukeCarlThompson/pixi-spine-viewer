@@ -225,15 +225,15 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     gap: var(--spacing-m);
-    width: 1200px;
-    max-width: 100%;
     margin: 0 auto 60px;
 
     &__inner {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
+      align-items: center;
       gap: var(--spacing-m);
     }
   }
