@@ -18,15 +18,11 @@
     align-items: center;
     position: relative;
     gap: 20px;
-    margin: 20px 30px;
-  }
-
-  h1 {
-    text-align: center;
+    margin: 20px var(--spacing-gutter);
   }
 
   .title {
-    flex: 1;
+    margin: 0 auto;
   }
 
   .github-link {
