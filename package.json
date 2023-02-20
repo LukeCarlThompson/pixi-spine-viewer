@@ -1,6 +1,6 @@
 {
   "name": "pixi-spine-viewer",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A web viewer for Pixi.js Spine animations",
   "license": "MIT",
   "author": {
