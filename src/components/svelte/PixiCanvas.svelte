@@ -21,6 +21,7 @@
   let scale = 1;
   let positionX = 0;
   let positionY = 0;
+  let timeScale = 1;
   let isGrabbing = false;
   let mouseLastPos = {
     x: 0,
@@ -137,6 +138,9 @@
     }
     spineAnimation = new Spine(spineData);
     spineAnimation.interactive = true;
+    spineAnimation.state.setAnimation(0, animationNames[0], true);
+    spineAnimation.skeleton.setSkinByName(skinNames[0]);
+
     spineAnimation.on('mouseenter', (e) => {
       document.body.style.cursor = 'grab';
     });
@@ -177,6 +181,7 @@
       damp(spineAnimation.scale, 'y', scale, 5, delta);
       damp(spineAnimation.position, 'x', positionX, 5, delta);
       damp(spineAnimation.position, 'y', positionY, 5, delta);
+      damp(spineAnimation.state, 'timeScale', timeScale, 5, delta);
     });
   };
 
@@ -232,6 +237,7 @@
       <NumberInput label="Scale" id="scale" step={0.1} bind:value={scale} />
       <NumberInput label="Position X" id="position-x" step={10} bind:value={positionX} />
       <NumberInput label="Position Y" id="position-y" step={10} bind:value={positionY} />
+      <NumberInput label="Time scale" id="time-scale" step={0.1} bind:value={timeScale} />
     </div>
   {/if}
 </div>
