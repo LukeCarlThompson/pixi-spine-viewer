@@ -1,7 +1,7 @@
 <script lang="ts">
   export let id: string;
   export let label: string;
-  export let value: string = '1';
+  export let value = 0;
   export let step = 1;
   export let onChange: (e: InputChangeEvent) => void = () => undefined;
 

@@ -10,6 +10,7 @@
   import NumberInput from './NumberInput.svelte';
   import Select from './Select.svelte';
   import { damp } from 'maath/easing/dist/maath-easing.cjs.js';
+  import { append } from 'svelte/internal';
 
   let canvasWrap: HTMLDivElement;
   let jsonInput: HTMLInputElement;
@@ -17,9 +18,14 @@
   let pngInput: HTMLInputElement;
   let pixiApp: PixiApp;
   let spineAnimation: Spine;
-  let scale = '1';
-  let positionX = '1';
-  let positionY = '1';
+  let scale = 1;
+  let positionX = 0;
+  let positionY = 0;
+  let isGrabbing = false;
+  let mouseLastPos = {
+    x: 0,
+    y: 0,
+  };
 
   let animationNames: string[] = ['test'];
   let skinNames: string[] = ['test'];
@@ -60,7 +66,7 @@
   const formSubmit = async (e: Event) => {
     e.preventDefault();
 
-    // TODO: Throw error and display message to user if files don't exist
+    // TODO: Throw error and display message to user if files don't exist or are the wrong kind
     if (!jsonInput.files?.length || !atlasInput.files?.length || !pngInput.files?.length) return;
 
     // TODO: clear and hide form after upload
@@ -98,7 +104,6 @@
 
     const runtimeVersion = jsonFile.skeleton.spine.substring(0, 3);
     // TODO: Show the spine version detected
-    console.log('pixi spine version -->', runtimeVersion);
 
     // TODO: Allow user to manually set runtime version
     let spineRuntime;
@@ -131,12 +136,36 @@
       spineAnimation.destroy(true);
     }
     spineAnimation = new Spine(spineData);
+    spineAnimation.interactive = true;
+    spineAnimation.on('mouseenter', (e) => {
+      document.body.style.cursor = 'grab';
+    });
+    spineAnimation.on('mouseleave', (e) => {
+      document.body.style.cursor = '';
+    });
+    spineAnimation.on('mousedown', (e) => {
+      document.body.style.cursor = 'grabbing';
+      isGrabbing = true;
+      mouseLastPos.x = e.clientX;
+      mouseLastPos.y = e.clientY;
+    });
+    spineAnimation.on('mouseup', (e) => {
+      document.body.style.cursor = 'grab';
+      isGrabbing = false;
+    });
 
-    positionX = `${pixiApp.renderer.width * 0.5}`;
-    positionY = `${pixiApp.renderer.height * 0.5}`;
+    canvasWrap.addEventListener('mousemove', (e) => {
+      if (!isGrabbing) return;
+      positionX = JSON.parse((positionX + e.clientX - mouseLastPos.x).toFixed(2));
+      positionY = JSON.parse((positionY + e.clientY - mouseLastPos.y).toFixed(2));
+      mouseLastPos.x = e.clientX;
+      mouseLastPos.y = e.clientY;
+    });
+
+    positionX = pixiApp.renderer.width * 0.5;
+    positionY = pixiApp.renderer.height * 0.5;
     // spineAnimation.pivot.x = spineAnimation.width * 0.5;
     // spineAnimation.pivot.y = spineAnimation.height * -0.5;
-    console.log(spineAnimation.scale.x);
 
     // TODO: Display an option to turn the debugger on and off
     // spineAnimation.debug = new SpineDebugRenderer();
@@ -144,10 +173,10 @@
     pixiApp.stage.addChild(spineAnimation);
 
     pixiApp.ticker.add((delta) => {
-      damp(spineAnimation.scale, 'x', Number.parseFloat(scale), 5, delta);
-      damp(spineAnimation.scale, 'y', Number.parseFloat(scale), 5, delta);
-      damp(spineAnimation.position, 'x', Number.parseFloat(positionX), 5, delta);
-      damp(spineAnimation.position, 'y', Number.parseFloat(positionY), 5, delta);
+      damp(spineAnimation.scale, 'x', scale, 5, delta);
+      damp(spineAnimation.scale, 'y', scale, 5, delta);
+      damp(spineAnimation.position, 'x', positionX, 5, delta);
+      damp(spineAnimation.position, 'y', positionY, 5, delta);
     });
   };
 
