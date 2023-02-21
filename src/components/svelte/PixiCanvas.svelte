@@ -10,7 +10,6 @@
   import NumberInput from './NumberInput.svelte';
   import Select from './Select.svelte';
   import { damp } from 'maath/easing/dist/maath-easing.cjs.js';
-  import { append } from 'svelte/internal';
 
   let canvasWrap: HTMLDivElement;
   let jsonInput: HTMLInputElement;
@@ -27,6 +26,7 @@
     x: 0,
     y: 0,
   };
+  let spineRuntimeVersion: '3.7' | '3.8' | '4.0' | '4.1';
 
   let animationNames: string[] = ['test'];
   let skinNames: string[] = ['test'];
@@ -80,9 +80,6 @@
       convertToText(atlasInput.files[0]),
     ]);
 
-    animationNames = Object.keys(jsonFile.animations);
-    skinNames = Object.keys(jsonFile.skins);
-
     createSpine({
       jsonFile,
       pngFile,
@@ -103,23 +100,29 @@
       (resolve) => new TextureAtlas(atlasFile, (line, callback) => callback(texture), resolve)
     );
 
-    const runtimeVersion = jsonFile.skeleton.spine.substring(0, 3);
+    spineRuntimeVersion = jsonFile.skeleton.spine.substring(0, 3);
     // TODO: Show the spine version detected
+
+    animationNames = Object.keys(jsonFile.animations);
 
     // TODO: Allow user to manually set runtime version
     let spineRuntime;
-    switch (runtimeVersion) {
+    switch (spineRuntimeVersion) {
       case '3.7':
         spineRuntime = await import('@pixi-spine/runtime-3.7');
+        skinNames = Object.keys(jsonFile.skins);
         break;
       case '3.8':
         spineRuntime = await import('@pixi-spine/runtime-3.8');
+        skinNames = Object.keys(jsonFile.skins);
         break;
       case '4.0':
         spineRuntime = await import('@pixi-spine/runtime-4.0');
+        skinNames = jsonFile.skins.map((item: any) => item.name);
         break;
       case '4.1':
         spineRuntime = await import('@pixi-spine/runtime-4.1');
+        skinNames = jsonFile.skins.map((item: any) => item.name);
         break;
       default:
         spineRuntime = await import('@pixi-spine/runtime-4.1');
