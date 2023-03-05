@@ -2,19 +2,22 @@
   import { reveal } from '$lib/cascade-reveal';
   import { slide } from 'svelte/transition';
   import downArrow from '$lib/images/down-arrow.svg?raw';
-  export let inputElement;
   export let fileType: string;
   export let id: string;
   export let label: string;
+  export let onChange: (e: InputChangeEvent) => void = () => undefined;
 
-  let fileDetails: string;
+  type InputChangeEvent = Event & { target: HTMLInputElement };
+
+  let fileDetails: string | undefined;
 
   const handleInputChange = (e: Event) => {
+    onChange(e as InputChangeEvent);
+
     const target = e.target as HTMLInputElement;
     if (!target || !target.files) return;
-    const [file] = target.files;
-    const { name, size } = file;
-    fileDetails = `${name} - ${(size / 1000).toFixed(2)}KB`;
+    const file = target.files[0];
+    fileDetails = file ? `${file.name} - ${(file.size / 1000).toFixed(2)}KB` : undefined;
   };
 </script>
 
@@ -24,7 +27,6 @@
     <input
       class="file-input__input"
       on:change={handleInputChange}
-      bind:this={inputElement}
       type="file"
       {id}
       accept={fileType}
@@ -38,9 +40,11 @@
       </span>
     </label>
   </div>
-  {#if fileDetails}
-    <p class="file-input__file-details" transition:slide>{fileDetails}</p>
-  {/if}
+  <span>
+    {#if fileDetails}
+      <p class="file-input__file-details" transition:slide>{fileDetails}</p>
+    {/if}
+  </span>
 </div>
 
 <style lang="scss">

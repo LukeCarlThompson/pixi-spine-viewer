@@ -6,15 +6,12 @@
   import type { PixiApp } from '../pixi/app';
   import { Spine, TextureAtlas, SpineDebugRenderer } from 'pixi-spine';
   import { Assets } from 'pixi.js';
-  import FileInput from './FileInput.svelte';
   import NumberInput from './NumberInput.svelte';
   import Select from './Select.svelte';
+  import SpineUploadForm from './SpineUploadForm.svelte';
   import { damp } from 'maath/easing/dist/maath-easing.cjs.js';
 
   let canvasWrap: HTMLDivElement;
-  let jsonInput: HTMLInputElement;
-  let atlasInput: HTMLInputElement;
-  let pngInput: HTMLInputElement;
   let pixiApp: PixiApp;
   let spineAnimation: Spine;
   let scale = 1;
@@ -31,59 +28,20 @@
   let animationNames: string[] = ['test'];
   let skinNames: string[] = ['test'];
 
-  const convertBase64 = (file: Blob): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const fileReader = new FileReader();
-      fileReader.readAsDataURL(file);
-
-      fileReader.onload = () => {
-        resolve(fileReader.result as string);
-      };
-
-      fileReader.onerror = (error) => {
-        reject(error);
-      };
-    });
-  };
-
-  const convertToText = (file: Blob): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const fileReader = new FileReader();
-      fileReader.readAsText(file);
-
-      fileReader.onload = () => {
-        resolve(fileReader.result as string);
-      };
-
-      fileReader.onerror = (error) => {
-        reject(error);
-      };
-    });
-  };
-
   // TODO: Add in controls to scale the spine anim and move around canvas
   // TODO: Add in grid with labelled coordinates
 
-  const formSubmit = async (e: Event) => {
-    e.preventDefault();
+  type FormData = {
+    json: Record<string, unknown>;
+    atlas: string;
+    png: string;
+  };
 
-    // TODO: Throw error and display message to user if files don't exist or are the wrong kind
-    if (!jsonInput.files?.length || !atlasInput.files?.length || !pngInput.files?.length) return;
-
-    // TODO: clear and hide form after upload
-
-    // TODO: Add upload progress indicator
-
-    const [jsonFile, pngFile, atlasFile] = await Promise.all([
-      JSON.parse(await convertToText(jsonInput.files[0])),
-      convertBase64(pngInput.files[0]),
-      convertToText(atlasInput.files[0]),
-    ]);
-
+  const handleFormSubmit = (data: FormData) => {
     createSpine({
-      jsonFile,
-      pngFile,
-      atlasFile,
+      jsonFile: data.json,
+      pngFile: data.png,
+      atlasFile: data.atlas,
     });
   };
 
@@ -195,22 +153,7 @@
   });
 </script>
 
-<form class="upload-form" id="upload" method="POST" on:submit={formSubmit}>
-  <div class="upload-form__inner">
-    <FileInput id={'json-file'} label=".json" fileType={'.json'} bind:inputElement={jsonInput} />
-
-    <FileInput
-      id={'atlas-file'}
-      label=".atlas"
-      fileType={'.atlas'}
-      bind:inputElement={atlasInput}
-    />
-
-    <FileInput id={'png-file'} label=".png" fileType={'.png'} bind:inputElement={pngInput} />
-  </div>
-
-  <button class="upload-button" type="submit" use:reveal data-reveal="fade-up">Upload</button>
-</form>
+<SpineUploadForm onSubmit={handleFormSubmit} />
 
 <div class="canvas-wrap" bind:this={canvasWrap} use:reveal data-reveal="fade">
   {#if spineAnimation}
