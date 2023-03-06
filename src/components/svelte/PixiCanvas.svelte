@@ -5,14 +5,18 @@
   import { onMount } from 'svelte';
   import type { PixiApp } from '../pixi/app';
   import { Spine, TextureAtlas, SpineDebugRenderer } from 'pixi-spine';
-  import { Assets } from 'pixi.js';
+  import { Assets, Container } from 'pixi.js';
   import NumberInput from './NumberInput.svelte';
+  import ColorPicker from 'svelte-awesome-color-picker';
+  import type { RgbaColor } from 'svelte-awesome-color-picker';
   import Select from './Select.svelte';
   import SpineUploadForm from './SpineUploadForm.svelte';
   import { damp } from 'maath/easing/dist/maath-easing.cjs.js';
 
   let canvasWrap: HTMLDivElement;
   let pixiApp: PixiApp;
+  let container: Container;
+  let debugRenderer: SpineDebugRenderer;
   let spineAnimation: Spine;
   let scale = 1;
   let positionX = 0;
@@ -25,10 +29,23 @@
   };
   let spineRuntimeVersion: '3.7' | '3.8' | '4.0' | '4.1';
 
+  let rgb: RgbaColor = {
+    r: 100,
+    g: 100,
+    b: 100,
+    a: 0.3,
+  };
+  let canvasBgColour: string;
+
+  let error: unknown;
+
+  $: {
+    canvasBgColour = rgb ? `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${rgb.a})` : '';
+  }
+
   let animationNames: string[] = ['test'];
   let skinNames: string[] = ['test'];
 
-  // TODO: Add in controls to scale the spine anim and move around canvas
   // TODO: Add in grid with labelled coordinates
 
   type FormData = {
@@ -38,11 +55,15 @@
   };
 
   const handleFormSubmit = (data: FormData) => {
-    createSpine({
-      jsonFile: data.json,
-      pngFile: data.png,
-      atlasFile: data.atlas,
-    });
+    try {
+      createSpine({
+        jsonFile: data.json,
+        pngFile: data.png,
+        atlasFile: data.atlas,
+      });
+    } catch (e) {
+      error = e;
+    }
   };
 
   type CreateSpineProps = {
@@ -127,15 +148,10 @@
       mouseLastPos.y = e.clientY;
     });
 
-    positionX = pixiApp.renderer.width * 0.5;
-    positionY = pixiApp.renderer.height * 0.5;
-    // spineAnimation.pivot.x = spineAnimation.width * 0.5;
-    // spineAnimation.pivot.y = spineAnimation.height * -0.5;
-
     // TODO: Display an option to turn the debugger on and off
-    // spineAnimation.debug = new SpineDebugRenderer();
+    spineAnimation.debug = debugRenderer;
 
-    pixiApp.stage.addChild(spineAnimation);
+    container.addChild(spineAnimation);
 
     pixiApp.ticker.add((delta) => {
       damp(spineAnimation.scale, 'x', scale, 5, delta);
@@ -150,12 +166,33 @@
     if (pixiApp) return;
     const { PixiApp } = await import('../pixi/app');
     pixiApp = new PixiApp({ el: canvasWrap });
+    container = new Container();
+    pixiApp.stage.addChild(container);
+    pixiApp.ticker.add((delta) => {
+      container.pivot.x = container.width * 0.5;
+      container.pivot.y = container.height * -0.5;
+      container.position.x = pixiApp.renderer.width * 0.5;
+      container.position.y = pixiApp.renderer.height * 0.5;
+    });
+    // debugRenderer = new SpineDebugRenderer();
   });
 </script>
 
 <SpineUploadForm onSubmit={handleFormSubmit} />
 
-<div class="canvas-wrap" bind:this={canvasWrap} use:reveal data-reveal="fade">
+{#if error}
+  <div class="error" transition:slide>
+    <pre>{error}</pre>
+  </div>
+{/if}
+
+<div
+  class="canvas-wrap"
+  bind:this={canvasWrap}
+  style:--canvas-bg-colour={canvasBgColour}
+  use:reveal
+  data-reveal="fade"
+>
   {#if spineAnimation}
     <div class="controls" transition:slide>
       {#if animationNames.length}
@@ -184,6 +221,7 @@
       <NumberInput label="Position X" id="position-x" step={10} bind:value={positionX} />
       <NumberInput label="Position Y" id="position-y" step={10} bind:value={positionY} />
       <NumberInput label="Time scale" id="time-scale" step={0.1} bind:value={timeScale} />
+      <ColorPicker bind:rgb label="Choose background colour" />
     </div>
   {/if}
 </div>
@@ -193,7 +231,7 @@
     position: relative;
     min-height: 200px;
     width: 100%;
-    background: rgba(100, 100, 100, 0.1);
+    background: var(--canvas-bg-colour, rgba(100, 100, 100, 0.3));
     border-radius: 8px;
     display: flex;
     &:after {
@@ -202,45 +240,12 @@
     }
   }
 
-  .upload-form {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: var(--spacing-m);
-    margin: 0 auto 60px;
-
-    &__inner {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      align-items: flex-start;
-      gap: var(--spacing-m);
-    }
-  }
-
-  .upload-button {
-    display: block;
-    position: relative;
-    border: none;
-    font-size: 2rem;
-    min-width: 200px;
-    padding: 10px 20px;
-    margin-top: 30px;
-    border-radius: 100px;
-    background: linear-gradient(135deg, #6ebeff, #6562be);
-    box-shadow: 0 3px 3px rgba(0, 0, 0, 0.4);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    font-weight: bold;
-    cursor: pointer;
-    transition: transform 0.4s cubic-bezier(0.5, 0, 0, 1),
-      box-shadow 0.4s cubic-bezier(0.5, 0, 0, 1);
-    &:hover {
-      transform: scale(1.1);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  .error {
+    pre {
+      border-radius: 8px;
+      background-color: rgb(255, 233, 233);
+      border: 2px solid var(--colour-error);
+      padding: 20px var(--spacing-m);
     }
   }
 
